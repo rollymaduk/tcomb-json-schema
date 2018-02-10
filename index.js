@@ -30,11 +30,15 @@ var types = {
     }
     if (s.hasOwnProperty('minLength')) {
       predicate = and(predicate, fcomb.minLength(s.minLength));
-      constraint = { minimum: s.minLength };
+      constraint = Object.assign({}, constraint, {
+        length: { minimum: s.minLength }
+      });
     }
     if (s.hasOwnProperty('maxLength')) {
       predicate = and(predicate, fcomb.maxLength(s.maxLength));
-      constraint = { maximum: s.maxLength };
+      constraint = Object.assign({}, constraint, {
+        length: { maximum: s.maxLength }
+      });
     }
     if (s.hasOwnProperty('pattern')) {
       var patternMatch = /^\/(.+)\/([gimuy]*)$/.exec(s.pattern);
@@ -47,8 +51,10 @@ var types = {
         );
       }
       constraint = s.message
-        ? { format: s.pattern, message: s.message }
-        : { format: s.pattern };
+        ? Object.assign({}, constraint, {
+            format: { pattern: s.pattern, message: s.message }
+          })
+        : Object.assign({}, constraint, { format: { pattern: s.pattern } });
     }
     if (s.hasOwnProperty('format')) {
       t.assert(
@@ -76,16 +82,16 @@ var types = {
         ? and(predicate, fcomb.gt(s.minimum))
         : and(predicate, fcomb.gte(s.minimum));
       constraint = s.exclusiveMinimum
-        ? { greaterThan: s.minimum }
-        : { greaterThanOrEqualTo: s.minimum };
+        ? { numericality: { greaterThan: s.minimum } }
+        : { numericality: { greaterThanOrEqualTo: s.minimum } };
     }
     if (s.hasOwnProperty('maximum')) {
       predicate = s.exclusiveMaximum
         ? and(predicate, fcomb.lt(s.maximum))
         : and(predicate, fcomb.lte(s.maximum));
       constraint = s.exclusiveMaximum
-        ? { lessThan: s.maximum }
-        : { lessThanOrEqualTo: s.maximum };
+        ? { numericality: { lessThan: s.maximum } }
+        : { numericality: { lessThanOrEqualTo: s.maximum } };
     }
     if (s.hasOwnProperty('integer') && s.integer) {
       predicate = and(predicate, util.isInteger);
@@ -104,16 +110,16 @@ var types = {
         ? and(predicate, fcomb.gt(s.minimum))
         : and(predicate, fcomb.gte(s.minimum));
       constraint = s.exclusiveMinimum
-        ? { greaterThan: s.minimum }
-        : { greaterThanOrEqualTo: s.minimum };
+        ? { numericality: { greaterThan: s.minimum } }
+        : { numericality: { greaterThanOrEqualTo: s.minimum } };
     }
     if (s.hasOwnProperty('maximum')) {
       predicate = s.exclusiveMaximum
         ? and(predicate, fcomb.lt(s.maximum))
         : and(predicate, fcomb.lte(s.maximum));
       constraint = s.exclusiveMaximum
-        ? { lessThan: s.maximum }
-        : { lessThanOrEqualTo: s.maximum };
+        ? { numericality: { lessThan: s.maximum } }
+        : { numericality: { lessThanOrEqualTo: s.maximum } };
     }
     type = predicate ? t.subtype(util.Int, predicate) : util.Int;
     return { type: type, constraint: constraint };
@@ -153,7 +159,9 @@ var types = {
             var item = {};
             var field = path[0];
             item[field] = value;
-            var error = validate(item, constraint[k]);
+            var constraints = {};
+            constraints[field] = constraint[field];
+            var error = validate(item, constraints);
             if (error) {
               return error[field][0];
             }
