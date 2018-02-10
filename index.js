@@ -148,15 +148,17 @@ var types = {
         constraint[k] = required[k]
           ? Object.assign(transformed.constraint || {}, { presence: true })
           : transformed.constraint;
-        options[k] = function(value, path) {
-          var item = {};
-          var field = path[0]
-          item[field] = value;
-          var error = validate(item, constraint[k]);
-          if (error) {
-            return error[field][0];
+        options[k] = {
+          error: function(value, path) {
+            var item = {};
+            var field = path[0];
+            item[field] = value;
+            var error = validate(item, constraint[k]);
+            if (error) {
+              return error[field][0];
+            }
+            return undefined;
           }
-          return undefined;
         };
       }
     }
