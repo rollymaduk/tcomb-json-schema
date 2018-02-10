@@ -95,7 +95,7 @@ var types = {
     }
     if (s.hasOwnProperty('integer') && s.integer) {
       predicate = and(predicate, util.isInteger);
-      constraint = { onlyInteger: true };
+      constraint = { numericality: { onlyInteger: true } };
     }
     type = predicate ? t.subtype(t.Number, predicate) : t.Number;
     return { type: type, constraint: constraint };
