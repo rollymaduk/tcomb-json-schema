@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "fcomb": "^0.1.0",
-    "tcomb": "^3.0.0",
+    "tcomb": "^3.0.0"
   },
   "devDependencies": {
     "eslint": "^4.7.2",
