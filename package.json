@@ -3,12 +3,14 @@
   "version": "0.3.2",
   "description": "Transforms a JSON Schema to a tcomb type",
   "main": "index.js",
-  "files": ["index.js", "util.js"],
+  "files": [
+    "index.js",
+    "util.js"
+  ],
   "scripts": {
     "lint": "eslint index.js",
     "test": "npm run prettier && npm run lint && mocha",
-    "prettier":
-      "prettier --single-quote --print-width 81 --write index.js util.js"
+    "prettier": "prettier --single-quote --print-width 81 --write index.js util.js"
   },
   "repository": {
     "type": "git",
@@ -20,9 +22,12 @@
     "url": "https://github.com/gcanti/tcomb-json-schema/issues"
   },
   "homepage": "https://github.com/gcanti/tcomb-json-schema",
+  "peerDependencies": {
+    "validate.js": ">=0.12.0"
+  },
   "dependencies": {
     "fcomb": "^0.1.0",
-    "tcomb": "^3.0.0"
+    "tcomb": "^3.0.0",
   },
   "devDependencies": {
     "eslint": "^4.7.2",
@@ -31,6 +36,12 @@
     "mocha": "2.4.5",
     "prettier": "^1.7.0"
   },
-  "tags": ["tcomb", "JSON Schema"],
-  "keywords": ["tcomb", "JSON Schema"]
+  "tags": [
+    "tcomb",
+    "JSON Schema"
+  ],
+  "keywords": [
+    "tcomb",
+    "JSON Schema"
+  ]
 }

@@ -30,29 +30,47 @@ var eq = assert.strictEqual;
 
 describe('transform', function() {
   it('should transform an empty schema', function() {
-    eq(transform({}), Any);
+    eq(transform({}).type, Any);
   });
 
   describe('string schema', function() {
     it('should transform a simple schema', function() {
-      eq(transform({ type: 'string' }), Str);
+      eq(transform({ type: 'string' }).type, Str);
     });
 
     it('should handle enum', function() {
       var Type = transform({
         type: 'string',
         enum: ['Street', 'Avenue', 'Boulevard']
-      });
+      }).type;
       eq(getKind(Type), 'enums');
       eq(Type.is('a'), false);
       eq(Type.is('Street'), true);
+    });
+
+    it.skip('should return error message for enum', function() {
+      var options = transform({
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            enum: ['Street', 'Avenue', 'Boulevard']
+          },
+          title: {
+            type: 'string',
+            minLength:3
+          }
+        },
+        required: ['name','title']
+      }).constraint;
+      eq(options, 'enums');
     });
 
     it('should handle enum objects', function() {
       var Type = transform({
         type: 'string',
         enum: { st: 'Street', ave: 'Avenue', blvd: 'Boulevard' }
-      });
+      }).type;
       eq(getKind(Type), 'enums');
       eq(Type.is('a'), false);
       eq(Type.is('st'), true);
@@ -62,7 +80,7 @@ describe('transform', function() {
       var Type = transform({
         type: 'string',
         minLength: 2
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, Str);
       eq(Type.meta.predicate('a'), false);
@@ -73,7 +91,7 @@ describe('transform', function() {
       var Type = transform({
         type: 'string',
         maxLength: 2
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, Str);
       eq(Type.meta.predicate('aa'), true);
@@ -84,7 +102,7 @@ describe('transform', function() {
       var Type = transform({
         type: 'string',
         pattern: '^h'
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, Str);
       eq(Type.meta.predicate('hello'), true);
@@ -95,7 +113,7 @@ describe('transform', function() {
       var Type = transform({
         type: 'string',
         pattern: '/^H/i'
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, Str);
       eq(Type.meta.predicate('hello'), true);
@@ -105,14 +123,14 @@ describe('transform', function() {
 
   describe('number schema', function() {
     it('should transform a simple schema', function() {
-      eq(transform({ type: 'number' }), Num);
+      eq(transform({ type: 'number' }).type, Num);
     });
 
     it('should handle minimum', function() {
       var Type = transform({
         type: 'number',
         minimum: 2
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, Num);
       eq(Type.meta.predicate(1), false);
@@ -125,7 +143,7 @@ describe('transform', function() {
         type: 'number',
         minimum: 2,
         exclusiveMinimum: true
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, Num);
       eq(Type.meta.predicate(1), false);
@@ -137,7 +155,7 @@ describe('transform', function() {
       var Type = transform({
         type: 'number',
         maximum: 2
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, Num);
       eq(Type.meta.predicate(1), true);
@@ -150,7 +168,7 @@ describe('transform', function() {
         type: 'number',
         maximum: 2,
         exclusiveMaximum: true
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, Num);
       eq(Type.meta.predicate(1), true);
@@ -162,7 +180,7 @@ describe('transform', function() {
       var Type = transform({
         type: 'number',
         integer: true
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, Num);
       eq(Type.meta.predicate(1), true);
@@ -174,7 +192,7 @@ describe('transform', function() {
     it('should transform a simple schema', function() {
       var Type = transform({
         type: 'integer'
-      });
+      }).type;
       ok(Type === util.Int);
       eq(Type.is(1), true);
       eq(Type.is(1.1), false);
@@ -184,7 +202,7 @@ describe('transform', function() {
       var Type = transform({
         type: 'integer',
         minimum: 2
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, util.Int);
       eq(Type.meta.predicate(1), false);
@@ -197,7 +215,7 @@ describe('transform', function() {
         type: 'integer',
         minimum: 2,
         exclusiveMinimum: true
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, util.Int);
       eq(Type.meta.predicate(1), false);
@@ -209,7 +227,7 @@ describe('transform', function() {
       var Type = transform({
         type: 'integer',
         maximum: 2
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, util.Int);
       eq(Type.meta.predicate(1), true);
@@ -222,7 +240,7 @@ describe('transform', function() {
         type: 'integer',
         maximum: 2,
         exclusiveMaximum: true
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, util.Int);
       eq(Type.meta.predicate(1), true);
@@ -232,7 +250,7 @@ describe('transform', function() {
   });
 
   it('should transform a null schema', function() {
-    var Type = transform({ type: 'null' });
+    var Type = transform({ type: 'null' }).type;
     ok(Type === util.Null);
     ok(Type.is(null));
     ko(Type.is(undefined));
@@ -240,12 +258,12 @@ describe('transform', function() {
   });
 
   it('should transform a boolean schema', function() {
-    eq(transform({ type: 'boolean' }), Bool);
+    eq(transform({ type: 'boolean' }).type, Bool);
   });
 
   describe('object schema', function() {
     it('should transform a simple schema', function() {
-      eq(transform({ type: 'object' }), Obj);
+      eq(transform({ type: 'object' }).type, Obj);
     });
 
     it('should handle optional properties', function() {
@@ -255,7 +273,7 @@ describe('transform', function() {
           a: { type: 'string' },
           b: { type: 'number' }
         }
-      });
+      }).type;
       var a = Type.meta.props.a;
       var b = Type.meta.props.b;
       eq(getKind(a), 'maybe');
@@ -272,7 +290,7 @@ describe('transform', function() {
           b: { type: 'number' }
         },
         required: ['a']
-      });
+      }).type;
       var a = Type.meta.props.a;
       var b = Type.meta.props.b;
       eq(getKind(a), 'irreducible');
@@ -284,11 +302,11 @@ describe('transform', function() {
 
   describe('array schema', function() {
     it('should transform a simple schema', function() {
-      eq(transform({ type: 'array' }), Arr);
+      eq(transform({ type: 'array' }).type, Arr);
     });
 
     it('should handle minItems', function() {
-      var Type = transform({ type: 'array', minItems: 1 });
+      var Type = transform({ type: 'array', minItems: 1 }).type;
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, Arr);
       eq(Type.meta.predicate([]), false);
@@ -296,7 +314,7 @@ describe('transform', function() {
     });
 
     it('should handle maxItems', function() {
-      var Type = transform({ type: 'array', maxItems: 2 });
+      var Type = transform({ type: 'array', maxItems: 2 }).type;
       eq(getKind(Type), 'subtype');
       eq(Type.meta.type, Arr);
       eq(Type.meta.predicate(['a', 'b']), true);
@@ -309,7 +327,7 @@ describe('transform', function() {
         items: {
           type: 'number'
         }
-      });
+      }).type;
       eq(getKind(Type), 'list');
       ok(Type.meta.type === Num);
     });
@@ -327,7 +345,7 @@ describe('transform', function() {
           },
           required: ['name']
         }
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       eq(getKind(Type.meta.type), 'list');
       eq(getKind(Type.meta.type.meta.type), 'struct');
@@ -357,7 +375,7 @@ describe('transform', function() {
           },
           required: ['name']
         }
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       eq(getKind(Type.meta.type), 'list');
       eq(getKind(Type.meta.type.meta.type), 'struct');
@@ -378,7 +396,7 @@ describe('transform', function() {
       var Type = transform({
         type: 'array',
         items: [{ type: 'string' }, { type: 'number' }]
-      });
+      }).type;
       eq(getKind(Type), 'tuple');
       ok(Type.meta.types[0] === Str);
       ok(Type.meta.types[1] === Num);
@@ -386,7 +404,7 @@ describe('transform', function() {
   });
 
   it('should handle unions', function() {
-    var Type = transform({ type: ['number', 'string'] });
+    var Type = transform({ type: ['number', 'string'] }).type;
     eq(getKind(Type), 'union');
     ok(Type.meta.types[0] === Num);
     ok(Type.meta.types[1] === Str);
@@ -440,7 +458,7 @@ describe('transform', function() {
       var Type = transform({
         type: 'string',
         format: 'email'
-      });
+      }).type;
       eq(getKind(Type), 'subtype');
       ok(Type.meta.type === Str);
       ok(Type.meta.predicate === isEmail);
@@ -474,7 +492,7 @@ describe('transform', function() {
         format: 'date',
         default: '',
         description: 'Date of your departure'
-      });
+      }).type;
       eq(getKind(Type), 'irreducible');
       ok(Type === Dat);
       ok(Type.is(new Date('2000-10-23')));
